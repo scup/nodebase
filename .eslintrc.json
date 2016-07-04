@@ -1,0 +1,14 @@
+{
+  "extends": "airbnb/base",
+  "parser": "babel-eslint",
+  "ecmaFeatures": {
+    "classes": true
+  },
+  "rules": {
+    "comma-dangle": [2, "never"],
+    "func-names": 0,
+    "no-param-reassign": 0,
+    "no-multi-str": 0,
+    "consistent-return": 0
+  }
+}
