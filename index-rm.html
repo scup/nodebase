@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Response Manager</title>
+	<link rel="stylesheet" href="reset.css">
+	<link rel="stylesheet" href="common.css">
+	<link rel="stylesheet" href="style-rm.css">
+	<link rel="dynamic-stylesheet" href="d-style.css">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+<header>
+	<div class="highlight-header">
+
+		<canvas id="bg" width="300" height="300"></canvas>
+		<div class="logo"></div>
+<!--     <div class="menu">
+      <i class="material-icons">menu</i>
+    </div> -->
+	</div>
+</header>
+
+    <section id="content">
+
+    <p align="center">
+      Pipeline lets you take control over streams with a plumbing tool-kit.
+    </p>
+
+      <h1 id="API Reference">API Reference</h1>
+
+      <h3 id="Pipe">Pipe</h3>
+        <p>The most basic structure of a pipeline, <b>Pipe</b> takes a in function that receives the next connection.</p>
+        <pre>
+        <code>
+          new Pipe()
+            .in(function(evt,next){
+              if (evt.type == 'mousedown'){ this.out.open() }
+              if (evt.type == 'mouseup'){ this.out.close() }
+              next(evt);
+          })
+        </code>
+        </pre>
+      <h3 id="Valve">Valve</h3>
+        <p>The most basic structure of a pipeline, <b>Pipe</b> takes a in function that receives the next connection.</p>
+        <pre>
+        <code>
+          new Pipe()
+            .in(function(evt,next){
+              if (evt.type == 'mousedown'){ this.out.open() }
+              if (evt.type == 'mouseup'){ this.out.close() }
+              next(evt);
+          })
+        </code>
+        </pre>
+      <h3 id="Tee">Tee</h3>
+        <p>The most basic structure of a pipeline, <b>Pipe</b> takes a in function that receives the next connection.</p>
+        <pre>
+        <code>
+
+          new <b>Tee</b>()
+          .<b>connectTo</b>(function(req, res){
+            return (req.url.indexOf('blue') !== -1);
+          },new <b>Pipe</b>()
+          .<b>in</b>(function(req, res){
+            res.end(req.url);
+          }))
+
+          .<b>connectTo</b>(function(req, res){
+            return (req.url.indexOf('red') !== -1);
+          },new <b>Pipe</b>()
+          .<b>in</b>(function(req, res){
+            res.end(req.url);
+          }))
+        </code>
+        </pre>
+      <h3 id="EventStream">EventStream</h3>
+        <p>The most basic structure of a pipeline, <b>Pipe</b> takes a in function that receives the next connection.</p>
+        <pre>
+        <code>
+          new <b>EventStream</b>(document,['mouseup','mousedown','mousemove'])
+        </code>
+        </pre>
+<!--
+      <p>On OS X or Linux:</p>
+
+<pre><code>curl https://raw.githubusercontent.com/apex/apex/master/install.sh | sh
+</code></pre>
+
+<p>On Windows download <a href="https://github.com/apex/apex/releases">binary</a>.</p>
+
+<p>If already installed, upgrade with:</p>
+
+<pre><code>apex upgrade
+</code></pre>
+
+
+      <h1 id="aws-credentials">AWS credentials</h1>
+      <p>Before using Apex you need to first give it your account credentials so that Apex can manage resources. There are a number of ways to do that, which are outlined here.</p>
+
+<h2 id="via-environment-variables">Via environment variables</h2>
+
+<p>Using environment variables only, you must specify the following:</p>
+
+<ul>
+<li><code>AWS_ACCESS_KEY</code> AWS account access key</li>
+<li><code>AWS_SECRET_KEY</code> AWS account secret key</li>
+<li><code>AWS_REGION</code> AWS region</li>
+</ul>
+
+<h2 id="via-aws-files">Via ~/.aws files</h2>
+
+<p>Using the ~/.aws/credentials and ~/.aws/config files you may specify <code>AWS_PROFILE</code> to tell apex which one to reference. However, if you do not have a ~/.aws/config file, or &ldquo;region&rdquo; is not defined, you should set it with the <code>AWS_REGION</code> environment variable. To read more on configuring these files view <a href="http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html">Configuring the AWS CLI</a>.</p>
+
+<h2 id="via-profile-flag">Via profile flag</h2>
+
+<p>If you have both ~/.aws/credentials and ~/.aws/config you may specify the profile directly with <code>apex --profile &lt;name&gt;</code> when issuing commands. This means you do not have to specify any environment variables, however you must provide it with each operation:</p>
+
+<pre><code>$ apex --profile myapp-prod deploy
+</code></pre>
+
+
+      <h1 id="structuring-projects">Structuring projects</h1>
+      <p>A &ldquo;project&rdquo; is the largest unit of abstraction in Apex. A project consists of collection of AWS Lambda functions, and
+all <code>apex(1)</code> operations have access to these functions.</p>
+
+<h2 id="configuration">Configuration</h2>
+
+<p>Projects must have a project.json file in the root directory. This file contains details about your project, as well as
+defaults for functions, if desired. Here&rsquo;s an example of a project.json file declaring a default AWS IAM &ldquo;role&rdquo; and &ldquo;memory&rdquo; for all functions.</p>
+
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;node&quot;,
+  &quot;description&quot;: &quot;Node.js example project&quot;,
+  &quot;role&quot;: &quot;arn:aws:iam::293503197324:role/lambda&quot;,
+  &quot;memory&quot;: 512
+}
+</code></pre>
+
+<h2 id="fields">Fields</h2>
+
+<h3 id="name">name</h3>
+
+<p>Name of the project. This field is used in the default value for &ldquo;nameTemplate&rdquo; to prevent collisions between multiple projects.</p>
+
+<ul>
+<li>type: <code>string</code></li>
+<li>required</li>
+</ul>
+
+<h3 id="description">description</h3>
+
+<p>Description of the project. This field is informational.</p>
+
+<ul>
+<li>type: <code>string</code></li>
+</ul>
+
+<h3 id="runtime">runtime</h3>
+
+<p>Default runtime of function(s) unless specified in their function.json configuration.</p>
+
+<ul>
+<li>type: <code>string</code></li>
+</ul>
+
+<h3 id="memory">memory</h3>
+
+<p>Default memory allocation of function(s) unless specified in their function.json configuration.</p>
+
+<ul>
+<li>type: <code>int</code></li>
+</ul>
+
+<h3 id="timeout">timeout</h3>
+
+<p>Default timeout of function(s) unless specified in their function.json configuration.</p>
+
+<ul>
+<li>type: <code>int</code></li>
+</ul>
+
+<h3 id="role">role</h3>
+
+<p>Default role of function(s) unless specified in their function.json configuration.</p>
+
+<ul>
+<li>type: <code>string</code></li>
+</ul>
+
+<h3 id="nametemplate">nameTemplate</h3>
+
+<p>Template used to compute the function names. By default the template <code>{{.Project.Name}}_{{.Function.Name}}</code> is used, for example project &ldquo;api&rdquo; and <code>./functions/users</code> becomes &ldquo;api_users&rdquo;. To disable prefixing, use <code>{{.Function.Name}}</code>, which would result in &ldquo;users&rdquo;.</p>
+
+<ul>
+<li>type: <code>string</code></li>
+</ul>
+
+<h3 id="retainedversions">retainedVersions</h3>
+
+<p>Default number of retained function&rsquo;s versions on AWS Lambda unless specified in their function.json configuration.</p>
+
+<ul>
+<li>type: <code>int</code></li>
+</ul>
+
+<h3 id="vpc">vpc</h3>
+
+<p>Default VPC configuration of function(s) unless specified in their function.json configuration.</p>
+
+<ul>
+<li>type: <code>object</code></li>
+</ul>
+
+<h4 id="vpc-securitygroups">vpc.securityGroups</h4>
+
+<p>List of security groups IDs</p>
+
+<ul>
+<li>type: <code>array</code></li>
+</ul>
+
+<h4 id="vpc-subnets">vpc.subnets</h4>
+
+<p>List of subnets IDs</p>
+
+<ul>
+<li>type: <code>array</code></li>
+</ul>
+
+
+      <h1 id="structuring-functions">Structuring functions</h1>
+      <p>A function is the smallest unit in Apex. A function represents an AWS Lambda function.</p>
+
+<p>Functions must include at least one source file (runtime dependent), such as index.js or main.go. Optionally a function.json file may be placed in the <em>function&rsquo;s directory</em>, specifying details such as the memory allocated or the AWS IAM role. If one or more functions is missing a function.json file you must provide defaults for the required fields in project.json (see &ldquo;Projects&rdquo; for an example).</p>
+
+<h2 id="configuration">Configuration</h2>
+
+<pre><code class="language-json">{
+  &quot;description&quot;: &quot;Node.js example function&quot;,
+  &quot;runtime&quot;: &quot;nodejs&quot;,
+  &quot;memory&quot;: 128,
+  &quot;timeout&quot;: 5,
+  &quot;role&quot;: &quot;arn:aws:iam::293503197324:role/lambda&quot;
+}
+</code></pre>
+
+<h2 id="fields">Fields</h2>
+
+<p>Fields marked as <code>inherited</code> may be provided in the project.json file instead.</p>
+
+<h3 id="description">description</h3>
+
+<p>Description of the function. This is used as the description in AWS Lambda.</p>
+
+<ul>
+<li>type: <code>string</code></li>
+<li>required</li>
+</ul>
+
+<h3 id="runtime">runtime</h3>
+
+<p>Runtime of the function. This is used as the runtime in AWS Lambda, or when required, is used to determine that the Node.js shim should be used. For example when this field is &ldquo;golang&rdquo;, the canonical runtime used is &ldquo;nodejs&rdquo; and a shim is injected into the zip file.</p>
+
+<ul>
+<li>type: <code>string</code></li>
+<li>required</li>
+<li>inherited</li>
+</ul>
+
+<h3 id="memory">memory</h3>
+
+<p>Memory allocated to the function, in megabytes.</p>
+
+<ul>
+<li>type: <code>int</code></li>
+<li>required</li>
+<li>inherited</li>
+</ul>
+
+<h3 id="timeout">timeout</h3>
+
+<p>Function timeout in sections.</p>
+
+<ul>
+<li>type: <code>int</code></li>
+<li>required</li>
+<li>inherited</li>
+</ul>
+
+<h3 id="role">role</h3>
+
+<p>AWS Lambda role used.</p>
+
+<ul>
+<li>type: <code>string</code></li>
+<li>required</li>
+<li>inherited</li>
+</ul>
+
+<h3 id="retainedversions">retainedVersions</h3>
+
+<p>Number of retained function&rsquo;s versions on AWS Lambda. If not specified <code>deploy</code> command will leave 10 versions.</p>
+
+<ul>
+<li>type: <code>int</code></li>
+<li>inherited</li>
+</ul>
+
+<h3 id="vpc">vpc</h3>
+
+<p>If your function needs to access resources in a VPC security groups and subnets have to be provided. You must provide at least one security group and one subnet.</p>
+
+<ul>
+<li>type: <code>object</code></li>
+<li>inherited</li>
+</ul>
+
+<h4 id="vpc-securitygroups">vpc.securityGroups</h4>
+
+<p>List of security groups IDs</p>
+
+<ul>
+<li>type: <code>array</code></li>
+<li>inherited</li>
+</ul>
+
+<h4 id="vpc-subnets">vpc.subnets</h4>
+
+<p>List of subnets IDs</p>
+
+<ul>
+<li>type: <code>array</code></li>
+<li>inherited</li>
+</ul>
+
+
+      <h1 id="deploying-functions">Deploying functions</h1>
+      <p>To deploy one or more functions all you need to do is run <code>apex deploy</code>. Apex deploys are idempotent; a build is created
+for each function, and Apex performs a checksum to see if the deployed function matches the local build, if so
+it&rsquo;s not deployed.</p>
+
+<p>After deploy Apex will cleanup old function&rsquo;s versions stored on AWS Lambda leaving only few. Number of retained versions
+can be specified in project or function configuration.</p>
+
+<p>If you prefer to be explicit you can pass one or more function names to <code>apex deploy</code>.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>Deploy all functions in the current directory:</p>
+
+<pre><code class="language-sh">$ apex deploy
+</code></pre>
+
+<p>Deploy all functions in the directory &ldquo;~/dev/myapp&rdquo;:</p>
+
+<pre><code class="language-sh">$ apex deploy -C ~/dev/myapp
+</code></pre>
+
+<p>Deploy specific functions:</p>
+
+<pre><code class="language-sh">$ apex deploy auth
+$ apex deploy auth api
+</code></pre>
+
+
+      <h1 id="invoking-functions">Invoking functions</h1>
+      <p>Apex allows you to invoke functions from the command-line, optionally passing a JSON event or stream to STDIN.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>Invoke without an event:</p>
+
+<pre><code class="language-sh">$ apex invoke collect-stats
+</code></pre>
+
+<p>Invoke with JSON event:</p>
+
+<pre><code class="language-sh">$ echo -n '{ &quot;value&quot;: &quot;Tobi the ferret&quot; }' | apex invoke uppercase
+{ &quot;value&quot;: &quot;TOBI THE FERRET&quot; }
+</code></pre>
+
+<p>Invoke from a file:</p>
+
+<pre><code class="language-sh">$ apex invoke uppercase &lt; event.json
+</code></pre>
+
+<p>Invoke a with stdin clipboard data:</p>
+
+<pre><code class="language-sh">$ pbpaste | apex invoke auth
+</code></pre>
+
+<p>Invoke function in a different project:</p>
+
+<pre><code class="language-sh">$ pbpaste | apex -C path/to/project invoke auth
+</code></pre>
+
+<p>Streaming invokes making multiple requests, generating data with <a href="https://github.com/yields/phony">phony</a>:</p>
+
+<pre><code class="language-sh">$ echo -n '{ &quot;user&quot;: &quot;{{name}}&quot; }' | phony | apex invoke uppercase
+{&quot;user&quot;:&quot;DELMER MALONE&quot;}
+{&quot;user&quot;:&quot;JC REEVES&quot;}
+{&quot;user&quot;:&quot;LUNA FLETCHER&quot;}
+...
+</code></pre>
+
+<p>Streaming invokes making multiple requests and outputting the response logs:</p>
+
+<pre><code class="language-sh">$ echo -n '{ &quot;user&quot;: &quot;{{name}}&quot; }' | phony | apex invoke uppercase --logs
+START RequestId: 30e826a4-a6b5-11e5-9257-c1543e9b73ac Version: $LATEST
+END RequestId: 30e826a4-a6b5-11e5-9257-c1543e9b73ac
+REPORT RequestId: 30e826a4-a6b5-11e5-9257-c1543e9b73ac	Duration: 0.73 ms	Billed Duration: 100 ms 	Memory Size: 128 MB	Max Memory Used: 10 MB
+{&quot;user&quot;:&quot;COLTON RHODES&quot;}
+START RequestId: 30f0b23c-a6b5-11e5-a034-ad63d48ca53a Version: $LATEST
+END RequestId: 30f0b23c-a6b5-11e5-a034-ad63d48ca53a
+REPORT RequestId: 30f0b23c-a6b5-11e5-a034-ad63d48ca53a	Duration: 2.56 ms	Billed Duration: 100 ms 	Memory Size: 128 MB	Max Memory Used: 9 MB
+{&quot;user&quot;:&quot;CAROLA BECK&quot;}
+START RequestId: 30f51e67-a6b5-11e5-8929-f53378ef0f47 Version: $LATEST
+END RequestId: 30f51e67-a6b5-11e5-8929-f53378ef0f47
+REPORT RequestId: 30f51e67-a6b5-11e5-8929-f53378ef0f47	Duration: 0.22 ms	Billed Duration: 100 ms 	Memory Size: 128 MB	Max Memory Used: 9 MB
+{&quot;user&quot;:&quot;TOBI FERRET&quot;}
+...
+</code></pre>
+
+
+      <h1 id="listing-functions">Listing functions</h1>
+      <p>Apex supports listing of functions in various outputs, currently human-friendly terminal output and &ldquo;tfvars&rdquo; support for integration with Terraform.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>List all functions and their configuration:</p>
+
+<pre><code class="language-sh">$ apex list
+
+  bar
+    runtime: nodejs
+    memory: 128mb
+    timeout: 5s
+    role: arn:aws:iam::293503197324:role/lambda
+    handler: index.handle
+    current version: 3
+
+  foo
+    runtime: nodejs
+    memory: 512mb
+    timeout: 10s
+    role: arn:aws:iam::293503197324:role/lambda
+    handler: index.handle
+    current version: 12
+</code></pre>
+
+<p>Terraform vars output:</p>
+
+<pre><code class="language-sh">$ apex list --tfvars
+apex_function_bar=&quot;arn:aws:lambda:us-west-2:293503197324:function:testing_bar&quot;
+apex_function_foo=&quot;arn:aws:lambda:us-west-2:293503197324:function:testing_foo&quot;
+</code></pre>
+
+
+      <h1 id="deleting-functions">Deleting functions</h1>
+      <p>Apex allows you to delete functions, however it will prompt by default. Use the <code>-f, --force</code> flag to override this behaviour. You may pass zero or more function names.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>Delete all with prompt:</p>
+
+<pre><code class="language-sh">$ apex delete
+The following will be deleted:
+
+  - bar
+  - foo
+
+Are you sure? (yes/no):
+</code></pre>
+
+<p>For delete of all functions:</p>
+
+<pre><code class="language-sh">$ apex delete -f
+</code></pre>
+
+<p>For delete of specific functions:</p>
+
+<pre><code class="language-sh">$ apex delete -f foo bar
+</code></pre>
+
+
+      <h1 id="building-functions">Building functions</h1>
+      <p>Apex generates a zip file for you upon deploy, however sometimes it can be useful to see exactly what&rsquo;s included in this file for debugging purposes. The <code>apex build</code> command outputs the zip to STDOUT for this purpose.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>Output zip to out.zip:</p>
+
+<pre><code class="language-sh">$ apex build foo &gt; out.zip
+</code></pre>
+
+
+      <h1 id="rolling-back-versions">Rolling back versions</h1>
+      <p>Apex allows you to roll back to the previous, or specified version of a function.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>Rollback to the previous release:</p>
+
+<pre><code class="language-sh">$ apex rollback foo
+</code></pre>
+
+<p>Rollback to specific version:</p>
+
+<pre><code class="language-sh">$ apex rollback foo 5
+</code></pre>
+
+<p>Preview rollback with <code>--dry-run</code>:</p>
+
+<pre><code class="language-sh">$ apex rollback --dry-run lowercase
+
+~ alias testing_lowercase
+ alias: current
+ version: 2
+
+$ apex rollback --dry-run uppercase 1
+
+~ alias testing_uppercase
+ version: 1
+ alias: current
+</code></pre>
+
+
+      <h1 id="function-hooks">Function hooks</h1>
+      <p>Apex supports the notion of hooks, which allow you to execute shell commands throughout
+a function&rsquo;s lifecycle. For example you may use these hooks to run tests or linting before
+a deploy, or to transpile source code using Babel, CoffeeScript, or similar.</p>
+
+<p>Hooks may be specified in project.json or function.json. Hooks are executed in the function&rsquo;s
+directory, not the project&rsquo;s directory.</p>
+
+<p>Internally Apex uses these hooks to implement out-of-the-box support for Golang and other
+compiled languages.</p>
+
+<h2 id="supported-hooks">Supported hooks</h2>
+
+<ul>
+<li><code>build</code> run during a build (useful for compiling)</li>
+<li><code>deploy</code> run before a deploy (useful for testing, linting)</li>
+<li><code>clean</code> run after a deploy (useful for cleaning up build artifacts)</li>
+</ul>
+
+<h2 id="examples">Examples</h2>
+
+<p>Here&rsquo;s the hooks used internally for Golang support.</p>
+
+<pre><code class="language-json">{
+  &quot;hooks&quot;: {
+    &quot;build&quot;: &quot;GOOS=linux GOARCH=amd64 go build -o main main.go&quot;,
+    &quot;clean&quot;: &quot;rm -f main&quot;
+  }
+}
+</code></pre>
+
+
+      <h1 id="viewing-log-output">Viewing log output</h1>
+      <p>Apex is integrated with CloudWatch Logs to view the output of functions. By default the logs for all functions will be displayed, unless one or more function names are passed to <code>apex logs</code>. You may also specify the duration of time in which the history is displayed (defaults to 5 minutes), as well as following and filtering results.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>View all function logs within the last 5 minutes:</p>
+
+<pre><code class="language-sh">$ apex logs
+</code></pre>
+
+<p>View logs for &ldquo;uppercase&rdquo; and &ldquo;lowercase&rdquo; functions:</p>
+
+<pre><code class="language-sh">$ apex logs uppercase lowercase
+</code></pre>
+
+<p>Follow or tail the log output for all functions:</p>
+
+<pre><code class="language-sh">$ apex logs -f
+</code></pre>
+
+<p>Follow a specific function:</p>
+
+<pre><code class="language-sh">$ apex logs -f foo
+</code></pre>
+
+<p>Follow filtered by pattern &ldquo;error&rdquo;:</p>
+
+<pre><code class="language-sh">$ apex logs -f foo --filter error
+$ apex logs -f foo -F error
+</code></pre>
+
+<p>Output the last hour of logs:</p>
+
+<pre><code class="language-sh">$ apex logs --start 1h
+$ apex logs -s 1h
+</code></pre>
+
+
+      <h1 id="viewing-metrics">Viewing metrics</h1>
+      <p>The <code>apex metrics</code> command provides a quick glance at the overall metrics for your functions, displaying the number of invocations, total execution duration, throttling, and errors within a given time period.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>View all function metrics within the last 24 hours:</p>
+
+<pre><code class="language-sh">$ apex metrics
+
+uppercase
+  invocations: 1242
+  duration: 65234ms
+  throttles: 0
+  error: 0
+
+lowercase
+  invocations: 1420
+  duration: 65234ms
+  throttles: 0
+  error: 5
+
+</code></pre>
+
+<p>View metrics for the last 15 minutes:</p>
+
+<pre><code class="language-sh">$ apex metrics --start 15m
+
+uppercase
+  invocations: 16
+  duration: 4212ms
+  throttles: 0
+  error: 0
+
+lowercase
+  invocations: 23
+  duration: 5200ms
+  throttles: 0
+  error: 5
+
+</code></pre>
+
+
+      <h1 id="previewing-with-dry-run">Previewing with dry-run</h1>
+      <p>Apex lets you perform a &ldquo;dry run&rdquo; of any operation with the <code>--dry-run</code> flag, and no destructive AWS changes will be made.</p>
+
+<h2 id="notation">Notation</h2>
+
+<p>Dry runs use the following symbols:</p>
+
+<ul>
+<li><code>+</code> resource will be created</li>
+<li><code>-</code> resource will be removed</li>
+<li><code>~</code> resource will be updated</li>
+</ul>
+
+<h2 id="examples">Examples</h2>
+
+<p>For example if you have the functions &ldquo;foo&rdquo; and &ldquo;bar&rdquo; which have never been deployed, you&rsquo;ll see the following output. This output represents the final requests made to AWS; notice how the function names are prefixed with the project&rsquo;s (&ldquo;testing&rdquo;) to prevent collisions, and aliases are made to maintain the &ldquo;current&rdquo; release alias.</p>
+
+<pre><code class="language-sh">$ apex deploy --dry-run
+
+  + function testing_bar
+    handler: _apex_index.handle
+    runtime: nodejs
+    memory: 128
+    timeout: 5
+
+  + alias testing_bar
+    alias: current
+    version: 1
+
+  + function testing_foo
+    memory: 128
+    timeout: 5
+    handler: _apex_index.handle
+    runtime: nodejs
+
+  + alias testing_foo
+    alias: current
+    version: 1
+</code></pre>
+
+<p>If you were to run <code>apex deploy foo</code>, then run <code>apex deploy --dry-run</code> again, you&rsquo;ll see that only &ldquo;bar&rdquo; needs deploying:</p>
+
+<pre><code class="language-sh">$ apex deploy --dry-run
+
+  + function testing_bar
+    runtime: nodejs
+    memory: 128
+    timeout: 5
+    handler: index.handle
+
+  + alias testing_bar
+    alias: current
+    version: 1
+</code></pre>
+
+<p>Similarly this can be used to preview configuration changes:</p>
+
+<pre><code class="language-sh">$ apex deploy --dry-run
+
+  ~ alias testing_foo
+    alias: current
+    version: $LATEST
+
+  ~ config testing_foo
+    memory: 128 -&gt; 512
+    timeout: 5 -&gt; 10
+</code></pre>
+
+<p>As mentioned this works for all AWS operations, here&rsquo;s a delete preview:</p>
+
+<pre><code class="language-sh">$ apex delete --dry-run -f
+
+  - function testing_bar
+
+  - function testing_foo
+</code></pre>
+
+
+      <h1 id="environment-variables">Environment variables</h1>
+      <p>AWS Lambda does not support environment variables out of the box, so this is a feature provided by Apex.</p>
+
+<p>The <code>-e, --env</code> flag allows you to define environment variables which are exposed to the function at runtime. For example in Node.js using <code>process.env.NAME</code> or in Go using <code>os.Getenv(&quot;NAME&quot;)</code>. Behind the scenes this generates a <code>.env.json</code> file which is injected into your function&rsquo;s zip file upon deploy. You may use this flag multiple times.</p>
+
+<h2 id="examples">Examples</h2>
+
+<p>For example suppose you had a loggly log collector and it needs an API token, you might deploy with:</p>
+
+<pre><code>$ apex deploy -e LOGGLY_TOKEN=token log-collector
+</code></pre>
+
+<p>Or suppose you have multiple functions using the GitHub API, you may want to expose a token to all of them:</p>
+
+<pre><code>$ apex deploy -e GITHUB_TOKEN=token
+</code></pre>
+
+<p>Specify environment variables in project.json or function.json:</p>
+
+<pre><code class="language-json">{
+  &quot;environment&quot;: {
+    &quot;LOGGLY_TOKEN&quot;: &quot;12314212213123&quot;
+  }
+}
+</code></pre>
+
+
+      <h1 id="omitting-files">Omitting files</h1>
+      <p>Optional <code>.apexignore</code> files may be placed in the project&rsquo;s root, or within specific function directories. It uses <a href="https://git-scm.com/docs/gitignore#_pattern_format">.gitignore pattern format</a>; all patterns defined, are relative to function directories and not the project itself. By default both <code>.apexignore</code> and <code>function.json</code> are ignored.</p>
+
+<h2 id="example">Example</h2>
+
+<p>Here&rsquo;s an example ignoring go source files and the function.json itself:</p>
+
+<pre><code>*.go
+</code></pre>
+
+
+      <h1 id="understanding-the-shim">Understanding the shim</h1>
+      <p>Apex uses a Node.js shim for non-native language support. This is a very small program which executes in a child process, and feeds Lambda input through STDIN, and program output through STDOUT. Because of this STDERR must be used for logging, not STDOUT.</p>
+
+
+      <h1 id="viewing-documentation">Viewing documentation</h1>
+      <p>The <code>apex docs</code> command lets you read this documentation from the command line. By default it is piped into the <code>less(1)</code> pager so that you can perform operations like scrolling or searching from the terminal.</p>
+
+<h2 id="tips">Tips</h2>
+
+<ul>
+<li>Type <code>/</code> and search a keyword, and press enter to search the document</li>
+<li>Type <code>n</code> to view the next occurrence of your query</li>
+<li>Type <code>u</code> to page up</li>
+<li>Type <code>d</code> to page down</li>
+<li>Type <code>q</code> to exit</li>
+</ul>
+
+
+      <h1 id="upgrading-apex">Upgrading Apex</h1>
+      <p>The <code>apex upgrade</code> command will update your installation of <code>apex(1)</code> :).</p>
+
+
+      <h1 id="faq">FAQ</h1>
+      <h2 id="how-do-you-manage-multiple-environments">How do you manage multiple environments?</h2>
+
+<p>It&rsquo;s highly recommended to create separate AWS accounts for staging and production environments. This provides complete isolation of resources, and allows you to easily provide granular access to environments as required. See <a href="#aws-credentials">AWS credentials</a> for supplying an account profile.</p>
+
+<h2 id="how-is-this-different-than-serverless">How is this different than Serverless?</h2>
+
+<p>Serverless uses CloudFormation to bootstrap resources, which can be great for getting started, but is generally less robust than <a href="https://github.com/apex/boilerplate">Terraform</a> for managing infrastructure throughout its lifetime. For this reason Apex does not currently provide resource management. This may change in the future for light bootstrapping, likely in an optional form.</p>
+
+<p>At the time of writing Serverless does not support shimming for languages which are not supported natively by Lambda, such as Golang. Apex does this for you out of the box.</p>
+
+<p>The structures imposed by each project are different, as well as varying features, see the documentation for each project to see what either supports.</p>
+
+<p>Serverless is written using Node.js, Apex is written in Go.</p>
+
+<h2 id="is-using-the-node-js-shim-slow">Is using the Node.js shim slow?</h2>
+
+<p>The shim creates a child process, thus creates a few-hundred millisecond delay for the first invocation. Subsequent calls to a function are likely to hit an active container, unless the function sees very little traffic.</p>
+
+<h2 id="do-shimmed-languages-have-any-limitations">Do shimmed languages have any limitations?</h2>
+
+<p>The shim currently operates using JSON over stdout, because of this you must use stderr for logging.</p>
+
+<h2 id="can-i-manage-functions-that-apex-did-not-create">Can I manage functions that Apex did not create?</h2>
+
+<p>Apex is not designed to handle legacy cases, or functions created by other software. For most operations Apex references the local functions, if it is not defined locally, then you cannot operate against it. This is by-design and is unlikely to change.</p>
+
+
+      <h1 id="links">Links</h1>
+      <ul>
+<li><a href="https://github.com/apex/apex/tree/master/_examples">Project examples</a> with source</li>
+<li><a href="https://github.com/apex/apex">GitHub</a> repository</li>
+<li><a href="https://github.com/apex/boilerplate">Boilerplate</a> example with Terraform</li>
+<li><a href="https://github.com/apex/go-apex">Go</a> runtime package</li>
+<li><a href="https://github.com/apex/node-apex">Node</a> runtime package</li>
+<li><a href="https://apex-dev.azurewebsites.net/"><img src="https://apex-dev.azurewebsites.net/badge.svg" alt="Slack Status" /></a></li>
+</ul> -->
+
+
+
+    </section>
+
+	<script src="https://cdn.rawgit.com/guisouza/DSS/master/dist/dss.min.js"></script>
+	<script type="text/javascript">
+		const BGCOLOR = '#3ceac7';
+	  const FGCOLOR = '#4df9f9';
+		const BGRGB = 'rgba(77,249,249,0)';
+	</script>
+	<script type="text/javascript" src="js/animation/lib/Stage.js"></script>
+	<script type="text/javascript" src="js/animation/lib/BlobAnimation.js"></script>
+	<script type="text/javascript" src="js/animation/lib/Grid.js"></script>
+	<script type="text/javascript" src="js/animation/animation.js"></script>
+	<script type="text/javascript" src="js/animation/TweenLite.min.js"></script>
+	<script type="text/javascript" src="js/animation/bulbs.js"></script>
+</body>
+</html>
