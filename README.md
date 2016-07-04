@@ -1,9 +1,9 @@
 # ![NodeBase](http://i.imgur.com/mhwQypc.jpg)
 
-## ResSendr - Friendly request handlers.
+## NodeBase - Sprinklr`s NODEJS boilerplate.
 
 ### Using
 
-- clone
+- git clone https://github.com/scup/nodebase.git && cd nodebase
 - npm install
 - npm start
