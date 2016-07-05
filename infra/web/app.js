@@ -37,7 +37,7 @@ class WebApp {
   }
 
   banner() {
-    return Logger.info('Server UP and Running', Settings);
+    console.log(`Server UP and Running in port: ${Settings.web.httpPort}`);
   }
 }
 
