@@ -6,9 +6,8 @@ export default class CreateMessageUseCase {
       text: message
     });
 
-    return newMessage.clean()
-    .then(cleanedMessage => {
-      return cleanedMessage.save()
-    });
+    return newMessage
+            .clean()
+            .then(cleanedMessage => cleanedMessage.save());
   }
 }

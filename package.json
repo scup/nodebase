@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./infra/web/babel_hook.js"
+    "start": "nodemon ./infra/web/babel_hook.js",
+    "lint": "eslint business components infra *.js --ext .js"
   },
   "author": "",
   "license": "ISC",
