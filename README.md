@@ -1,6 +1,6 @@
 # ![NodeBase](http://i.imgur.com/mhwQypc.jpg)
 
-## NodeBase - Sprinklr`s NODEJS boilerplate.
+## NodeBase - Scup NODEJS boilerplate.
 
 ### Using
 
