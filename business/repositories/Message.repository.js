@@ -2,7 +2,7 @@ import CensorService from '../../infra/services/censor.service';
 
 const censorService = new CensorService();
 
-export default class MessageRepository{
+export default class MessageRepository {
 
   constructor(args) {
     this.storage = [];
